@@ -1,86 +1,113 @@
-// Online C compiler to run C program online
 #include <stdio.h>
-     struct flight{
-        int id[10];
-         char from[3][30];
-        char to[3][30];
-       int avaliableseats[10];
-       float prices[10];
-    }s1;
+#include <string.h>
 
-    void displaymenu(struct flight s1, int num){
-        printf("These flights are avaliable\n");
-        for(int i=0;i<num;i++){
-                  printf("ID : %d, From : %s, To : %s, Seats : %d, Price : %.2f\n",
-               s1.id[i], s1.from[i], s1.to[i], s1.avaliableseats[i], s1.prices[i]);
+#define MAX_FLIGHTS 10
+#define MAX_PASSENGERS 100
+
+struct Flight {
+    int id;
+    char from[30];
+    char to[30];
+    int availableSeats;
+    float price;
+};
+
+struct Booking {
+    char passengerName[30];
+    int age;
+    int flightId;
+    int seatsBooked;
+};
+
+void displayMenu(struct Flight flights[], int num) {
+    printf("These flights are available:\n");
+    for (int i = 0; i < num; i++) {
+        printf("ID: %d, From: %s, To: %s, Seats: %d, Price: %.2f\n",
+               flights[i].id, flights[i].from, flights[i].to, flights[i].availableSeats, flights[i].price);
+    }
+}
+
+void bookFlight(struct Flight flights[], int num, struct Booking bookings[], int *bookingCount) {
+    struct Booking newBooking;
+    printf("Enter your Name: ");
+    scanf("%s", newBooking.passengerName);
+    printf("Enter your age: ");
+    scanf("%d", &newBooking.age);
+    printf("Enter your flight ID: ");
+    scanf("%d", &newBooking.flightId);
+
+    int flightFound = 0;
+    for (int i = 0; i < num; i++) {
+        if (newBooking.flightId == flights[i].id) {
+            flightFound = 1;
+            int seats;
+            printf("Enter number of seats: ");
+            scanf("%d", &seats);
+
+            if (seats <= flights[i].availableSeats) {
+                flights[i].availableSeats -= seats;
+                newBooking.seatsBooked = seats;
+                bookings[*bookingCount] = newBooking; // Store the booking
+                (*bookingCount)++;
+                printf("Your reservation is confirmed.\n");
+                printf("Booking successful! You have booked %d seats on flight %d.\n", seats, newBooking.flightId);
+            } else {
+                printf("Seats are not available.\n");
+                printf("Only %d seats are available. Please try again!\n", flights[i].availableSeats);
+            }
+            break;
         }
     }
-    // struct booking{
-    //     char passenger[30];
-    //     int age;
-    //     int id_no;
-    // }s2;
-    void booking_passenger(struct flight s1,int num)
-    {
-      char name[10];
-      printf("Enter your Name:");
-      scanf("%s",&name);
-      int age;
-      printf("Enter your age:");
-      scanf("%d",&age);
-      int flight_id;
-      printf("Enter your flight id:");
-      scanf("%d",&flight_id);
-      for(int i=0;i<num;i++)
-      if(flight_id==s1.id[i]) 
-      {
-          int seats;
-         printf("Enter  no. ofseats:");
-         scanf("%d",&seats);
-        
-        if(seats<=s1.avaliableseats[i]){
-          s1.avaliableseats[i]-=seats;
-          printf("Your reservation conformed");
-          printf("\n Booking sucessful! you have booked %d seats on flight %d",seats,flight_id);
-          break;
-      }
-      else{
-          printf("seats are not avaliable\n");
-          printf("only %d is avaliable\n please Try again!\n",s1.avaliableseats[i]);
-          break;
-      }
+    if (!flightFound) {
+        printf("Flight ID %d not found. Please try again!\n", newBooking.flightId);
     }
+}
+
+void viewBookings(struct Booking bookings[], int bookingCount) {
+    if (bookingCount == 0) {
+        printf("No bookings found.\n");
+        return;
     }
-    
-int main(){
-        int n=3;
-    struct flight s1 = {
-        {101, 102, 103}, // Flight IDs
-        {"New York", "Chicago", "Dallas"}, // From locations
-        {"Los Angeles", "Miami", "Boston"}, // To locations
-        {10, 5, 3}, // Seats available
-        {150.00, 120.00, 180.00} 
-        };
-        
+    printf("Booking Details:\n");
+    for (int i = 0; i < bookingCount; i++) {
+        printf("Passenger: %s, Age: %d, Flight ID: %d, Seats Booked: %d\n",
+               bookings[i].passengerName, bookings[i].age, bookings[i].flightId, bookings[i].seatsBooked);
+    }
+}
+
+int main() {
+    int n = 3;
+    struct Flight flights[MAX_FLIGHTS] = {
+        {101, "New York", "Los Angeles", 10, 150.00},
+        {102, "Chicago", "Miami", 5, 120.00},
+        {103, "Dallas", "Boston", 3, 180.00}
+    };
+
+    struct Booking bookings[MAX_PASSENGERS];
+    int bookingCount = 0;
     int choice;
-    
+
     while (1) {
         printf("\n----- Airline Reservation System -----\n");
-        printf("1. Book flight \n");
-        printf("2. View Booking Details\n");
-        printf("3. Exit\n");
+        printf("1. View available flights\n");
+        printf("2. Book flight\n");
+        printf("3. View Booking Details\n");
+        printf("4. Exit\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
-        
+
         switch (choice) {
             case 1:
-                displaymenu(s1,n); // Display available flights
+                displayMenu(flights, n); // Display available flights
                 break;
             case 2:
-                booking_passenger(s1,n);
-// Display booking details
+                displayMenu(flights, n); // Display available flights before booking
+                bookFlight(flights, n, bookings, &bookingCount); // Book a flight
                 break;
             case 3:
+                viewBookings(bookings, bookingCount); // Display booking details
+                break;
+            case 4:
                 printf("Thank you for using the Airline Reservation System.\n");
                 return 0;
             default:
@@ -89,7 +116,4 @@ int main(){
     }
 
     return 0;
-
-    // displaymenu(s1,n);
-    // return 0;
 }
